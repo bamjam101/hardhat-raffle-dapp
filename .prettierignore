@@ -1,0 +1,6 @@
+node_modules
+artifacts
+deployments
+yarn.lock
+cache
+img
