@@ -22,11 +22,14 @@ module.exports = {
 	networks: {
 		hardhat: {
 			chainId: 31337,
+			blockConfirmations: 1,
 		},
 		localhost: {
 			chainId: 31337,
+			blockConfirmations: 1,
 		},
 		sepolia: {
+			chainId: 11155111,
 			url: SEPOLIA_RPC_URL,
 			accounts: [PRIVATE_KEY],
 			blockConfirmations: 6,
