@@ -1,19 +1,22 @@
 // SPDX-License-Identifier: MIT
 
+// Pragma statement
 pragma solidity ^0.8.7;
 
+// Import statements
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 
-error Raffle__NotEnoughETHForRaffle();
-error Raffle__TransferFailed();
-error Raffle__NotOpen();
-error Raffle_UpkeepNotNeeded(
+// Error statements
+error Raffle__UpkeepNotNeeded(
 	uint256 currentBalance,
 	uint256 numPlayers,
 	uint256 raffleState
 );
+error Raffle__NotEnoughETHForRaffle();
+error Raffle__TransferFailed();
+error Raffle__NotOpen();
 
 /**
  * @title A sample Raffle contract
@@ -26,12 +29,11 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	enum RaffleState {
 		OPEN,
 		CALCULATING
-	} // 0= open, 1 = calculating
-	// State Variables
-	uint256 private immutable i_enlistmentFee; // entry fee private to developers
-	address payable[] private s_players; // list of players during a raffle round private to developers
-	VRFCoordinatorV2Interface private immutable i_vrfCoordinator; // declaring vrf coordinator using VRFCoordinatorV2Interface
+	} // where 0= open, 1 = calculating
 
+	// State Variables
+	// 1. Chainlink VRF variables
+	VRFCoordinatorV2Interface private immutable i_vrfCoordinator; // declaring vrf coordinator using VRFCoordinatorV2Interface
 	// Args for requesting random number
 	bytes32 private immutable i_gasLane; // Gas configuration for network type
 	uint64 private immutable i_subscriptionId; // Subscribers Id to work with VRF
@@ -39,7 +41,9 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	uint16 private constant REQUEST_CONFIRMATIONS = 3;
 	uint32 private constant NUM_WORDS = 1; // no. of response to be generated
 
-	// Lottery Winner Variables
+	// 2. Lottery Variables
+	address payable[] private s_players; // list of players during a raffle round private to developers
+	uint256 private immutable i_enlistmentFee; // entry fee private to developers
 	address private s_recentWinner;
 	RaffleState private s_raffleState;
 	uint256 private s_lastTimeStamp;
@@ -47,8 +51,8 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
 	// Events - These are defined to facilitate logging of data in much more convenient manner such that it becomes retrieveable.
 	event RaffleJoin(address indexed player); // Takes in player address as indexed argument, indexed items are easier to query.
-	event RequestRaffleWinner(uint256 indexed requestId);
-	event WinnerPicked(address indexed recentWinner);
+	event WinnerPicked(address indexed player);
+	event RequestedRaffleWinner(uint256 indexed requestId);
 
 	// Functions inorder
 
@@ -59,22 +63,22 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	 * @param vrfCoordinatorV2 is coordinator arguement
 	 */
 	constructor(
+		bytes32 gasLane,
 		address vrfCoordinatorV2,
 		uint256 enlistmentFee,
-		bytes32 gasLane,
 		uint64 subscriptionId,
-		uint32 callbackGAsLimit,
+		uint32 callbackGasLimit,
 		uint256 interval
 	) VRFConsumerBaseV2(vrfCoordinatorV2) {
-		i_enlistmentFee = enlistmentFee;
-		i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
-		// Initialization of parameters -> to be passed to function responsible for generating random words
 		i_gasLane = gasLane;
+		i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
+		i_enlistmentFee = enlistmentFee;
+		// Initialization of parameters -> to be passed to function responsible for generating random words
 		i_subscriptionId = subscriptionId;
-		i_callbackGasLimit = callbackGAsLimit;
+		i_callbackGasLimit = callbackGasLimit;
+		i_interval = interval;
 		s_raffleState = RaffleState.OPEN;
 		s_lastTimeStamp = block.timestamp;
-		i_interval = interval;
 	}
 
 	/**
@@ -120,7 +124,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	function performUpkeep(bytes calldata /* performData */) external override {
 		(bool upkeepNeeded, ) = checkUpkeep("");
 		if (!upkeepNeeded) {
-			revert Raffle_UpkeepNotNeeded(
+			revert Raffle__UpkeepNotNeeded(
 				address(this).balance,
 				s_players.length,
 				uint256(s_raffleState)
@@ -136,8 +140,8 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 			i_callbackGasLimit,
 			NUM_WORDS
 		);
-		// Once response of random word is generated following actions are set off
-		emit RequestRaffleWinner(requestId);
+		// Once response of random word is generated following actions are set off and fulfillRandomWords function is executed by Chainlink Keepers
+		emit RequestedRaffleWinner(requestId);
 		// 2 transaction process
 	}
 
