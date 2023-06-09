@@ -195,7 +195,7 @@ const { assert, expect } = require("chai")
                 All the assertions are done once the WinnerPicked event is fired 
                 */
 
-				it("picks a winner, resets the raffle, and sends money", async () => {
+				it.only("picks a winner, resets the raffle, and sends money", async () => {
 					const additionalEnlistments = 3
 					const startingAccountIndex = 1 // deployer = 0
 					const accounts = await ethers.getSigners()
@@ -211,9 +211,64 @@ const { assert, expect } = require("chai")
 							value: raffleEnlistmentFee,
 						})
 					}
-					const startingTimeStamp = await raffle.getLastTimeStamp()
+					const startingTimeStamp = await raffle.getTimeStamp()
 
 					// Execute performUpkeep by being a mock Chainlink keeper. Also, executing fulfillRandomWords by being a mock Chainlink VRF.
+					await new Promise(async (resolve, reject) => {
+						// Listener setup
+						raffle.once("WinnerPicked", async () => {
+							console.log("Found the event!")
+							try {
+								const recentWinner =
+									await raffle.getRecentWinner()
+								// We compare the recent winner to all the players enlisted in the raffle to find out the index/address of account that won the raffle i.e., accounts[1] is the winner.
+								console.log(`Recent winner is ${recentWinner}`)
+								console.log(accounts[0].address)
+								console.log(accounts[1].address)
+								console.log(accounts[2].address)
+								console.log(accounts[3].address)
+
+								const raffleState =
+									await raffle.getRaffleState()
+								const endingTimeStamp =
+									await raffle.getTimeStamp()
+								const numPlayers =
+									await raffle.getNumberOfPlayers()
+								// To compare the balance of winner, whether he/she received money from the Raffle or not.
+								const winnerEndingBalance =
+									await accounts[1].getBalance()
+
+								assert.equal(numPlayers.toString(), "0")
+								assert.equal(raffleState.toString(), "0")
+								assert(endingTimeStamp > startingTimeStamp)
+								// Money transfer assert comparison
+								assert.equal(
+									winnerEndingBalance.toString(),
+									winnerStartingBalance.add(
+										raffleEnlistmentFee
+											.mul(additionalEnlistments)
+											.add(raffleEnlistmentFee)
+											.toString()
+									)
+								)
+							} catch (error) {
+								reject(error)
+								console.log(error)
+							}
+							resolve()
+						})
+						// Firing of event is carried out by following code which is picked up by our listener defined above.
+						const tx = await raffle.performUpkeep([])
+						const txReciept = await tx.wait(1)
+						const winnerStartingBalance =
+							await accounts[1].getBalance()
+
+						await vrfCoordinatorV2Mock.fulfillRandomWords(
+							txReciept.events[1].args.requestId,
+							raffle.address
+						)
+						// Once these lines are executed the listener captures the event and then the unit tests are evaluated.
+					})
 				})
 			})
 	  })

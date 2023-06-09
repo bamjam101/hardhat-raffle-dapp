@@ -11,22 +11,20 @@ Hence, to avoid bankruptcy Chainlink request prices vary in accordance of gas pr
 */
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
-	const { deploy, log } = deployments
-	const { deployer } = await getNamedAccounts()
+  const { deploy, log } = deployments
+  const { deployer } = await getNamedAccounts()
 
-	const chainId = network.config.chainId
-
-	if (developmentChains.includes(network.name)) {
-		log("Local network detected! Deploying mocks...")
-		// deploying a mock vrf coordinator:
-		await deploy("VRFCoordinatorV2Mock", {
-			from: deployer,
-			log: true,
-			args: [BASE_FEE, GAS_PRICE_LINK],
-		})
-		log("Mocks deployed!")
-		log("-----------------------------------------")
-	}
+  if (developmentChains.includes(network.name)) {
+    log("Local network detected! Deploying mocks...")
+    // deploying a mock vrf coordinator:
+    await deploy("VRFCoordinatorV2Mock", {
+      from: deployer,
+      log: true,
+      args: [BASE_FEE, GAS_PRICE_LINK],
+    })
+    log("Mocks deployed!")
+    log("-----------------------------------------")
+  }
 }
 
 module.exports.tags = ["all", "mocks"]
