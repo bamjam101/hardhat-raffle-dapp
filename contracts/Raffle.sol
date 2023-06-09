@@ -50,7 +50,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	uint256 private immutable i_interval;
 
 	// Events - These are defined to facilitate logging of data in much more convenient manner such that it becomes retrieveable.
-	event RaffleJoin(address indexed player); // Takes in player address as indexed argument, indexed items are easier to query.
+	event RaffleJoined(address indexed player); // Takes in player address as indexed argument, indexed items are easier to query.
 	event WinnerPicked(address indexed player);
 	event RequestedRaffleWinner(uint256 indexed requestId);
 
@@ -93,7 +93,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 			revert Raffle__NotOpen();
 		}
 		s_players.push(payable(msg.sender));
-		emit RaffleJoin(msg.sender);
+		emit RaffleJoined(msg.sender);
 	}
 
 	/**
@@ -182,7 +182,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	 * @notice Retrieves enlisted players based out on the index provided
 	 * @param index is the position of the player enlisted in current Raffle round.
 	 */
-	function getPlayers(uint256 index) public view returns (address) {
+	function getPlayer(uint256 index) public view returns (address) {
 		return s_players[index];
 	}
 
@@ -226,5 +226,12 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	 */
 	function getRequestConfirmations() public pure returns (uint256) {
 		return REQUEST_CONFIRMATIONS;
+	}
+
+	/**
+	 * @notice Retrieves interval in a round of Raffle
+	 */
+	function getInterval() public view returns (uint256) {
+		return i_interval;
 	}
 }
