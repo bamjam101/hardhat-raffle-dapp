@@ -12,7 +12,7 @@ const networkConfig = {
       "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c", // 30 gwei
     keepersUpdateInterval: "30",
     raffleEntranceFee: ethers.utils.parseEther("0.01"), // 0.01 ETH
-    callbackGasLimit: "1000000", // 500,000 gas
+    callbackGasLimit: "500000", // 500,000 gas
   },
   11155111: {
     name: "sepolia",

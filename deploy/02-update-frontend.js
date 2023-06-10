@@ -9,8 +9,14 @@ const FRONTEND_ABI_FILE =
 module.exports = async () => {
   if (process.env.UPDATE_FRONTEND) {
     console.log("Updating frontend...")
-    updateContractAddresses()
-    updateABIFile()
+    try {
+      updateContractAddresses()
+      updateABIFile()
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+    console.log("Frontend updated finished, exiting code (0)")
   }
 }
 

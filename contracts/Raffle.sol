@@ -56,7 +56,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
   // Functions inorder
 
   /**
-   * @notice All the initialization is being carried forward in this constructor function
+   * @notice Initialization of parameters -> to be passed to function responsible for generating random words i.e., Chainlink VRF and Chainlink Keepers.
    * @dev VRFConsumerBaseV2 accepts vrfCoordinatorV2 for coordinating our contract to the Chainlink VRF
    * @param enlistmentFee Fee amount to enlist into a Raffle round
    * @param vrfCoordinatorV2 is coordinator arguement
@@ -76,7 +76,6 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     i_gasLane = gasLane;
     i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
     i_enlistmentFee = enlistmentFee;
-    // Initialization of parameters -> to be passed to function responsible for generating random words
     i_subscriptionId = subscriptionId;
     i_callbackGasLimit = callbackGasLimit;
     i_interval = interval;

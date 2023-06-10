@@ -28,8 +28,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const arguments = [
     networkConfig[chainId]["gasLane"],
     vrfCoordinatorV2Address,
-    networkConfig[chainId]["raffleEntranceFee"],
-    subscriptionId,
+    networkConfig[chainId]["raffleEntranceFee"].toString(),
+    subscriptionId.toString(),
     networkConfig[chainId]["callbackGasLimit"],
     networkConfig[chainId]["keepersUpdateInterval"],
   ]
@@ -38,13 +38,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     from: deployer,
     args: arguments,
     log: true,
-    waitConfirmations: network.config.blockConfirmations || 1,
+    waitConfirmations: network.config.blockConfirmations || 5,
   })
 
   // In latest version of Chainlink/contracts 0.6.1 or after 0.4.1, we need to add consumer explicitly after deployment of contract
   if (developmentChains.includes(network.name)) {
     await vrfCoordinatorV2Mock.addConsumer(subscriptionId, raffle.address)
-    log("Consumer is added")
+    log("Consumer added!")
   }
 
   if (
